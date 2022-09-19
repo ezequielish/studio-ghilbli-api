@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,8 +11,28 @@ use Illuminate\Support\Facades\Route;
 | routes are loaded by the RouteServiceProvider within a group which
 | is assigned the "api" middleware group. Enjoy building your API!
 |
-*/
+ */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+// Route::get('/login', function () {
+//     // Only authenticated users may access this route...
+// })->middleware('auth.basic.once');
+
+// Route::get('login', [UserController::class, 'show'])->middleware('auth');
+// Route::post('login', 'LoginController@index')->middleware('auth.basic');
+Route::post('user', 'UserController@index');
+
+Route::post('comment', 'CommentsController@add');
+Route::get('comment/{id_film}', 'CommentsController@get');
+Route::put('comment/{id_comment}', 'CommentsController@update');
+Route::delete('comment/{id_comment}', 'CommentsController@comment_delete');
+
+// Route::middleware(['auth.basic.once'])->group(function () {
+//     // Route::get('/', function () {
+//     //     // Uses first & second middleware...
+//     // });
+//     Route::post('/login', );
+// });

@@ -47,4 +47,41 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @throws \Throwable
+     */
+    public function render($request, Throwable $exception)
+    {
+
+        if (isset($exception->validator)) {
+            $msg = [];
+
+            foreach ((array) $exception->validator->messages() as $k => $value) {
+                if (\is_array($value)) {
+                    foreach ($value as $key_v => $val) {
+                        array_push($msg, $val[0]);
+                    }
+                }
+            }
+            return response()->json(['error' => $msg], 400);
+        }
+
+        if (intval($exception->getCode()) >= 400) {
+            return response()->json(
+                [
+                    'message' => $exception->getMessage(),
+                    'error' => true,
+                ], $exception->getCode());
+        }
+
+        return response()->json(['error' => $exception->getMessage() ?? 'Internal Error'], 500);
+
+    }
 }
