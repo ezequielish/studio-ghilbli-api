@@ -60,6 +60,9 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
 
+        /**
+         * validate  request body
+         */
         if (isset($exception->validator)) {
             $msg = [];
 
@@ -70,7 +73,19 @@ class Handler extends ExceptionHandler
                     }
                 }
             }
-            return response()->json(['error' => $msg], 400);
+            return response()->json(['error' => true,'message' => $msg[0]], 400);
+        }
+
+        if (method_exists($exception, 'getStatusCode')) {
+
+            if (intval($exception->getStatusCode()) == 404) {
+
+                return response()->json(
+                    [
+                        'message' => "Not Found",
+                        'error' => true,
+                    ], 404);
+            }
         }
 
         if (intval($exception->getCode()) >= 400) {
@@ -81,7 +96,12 @@ class Handler extends ExceptionHandler
                 ], $exception->getCode());
         }
 
-        return response()->json(['error' => $exception->getMessage() ?? 'Internal Error'], 500);
+        $resp = [
+            "error" => true,
+            "message" => $exception->getMessage() ?? 'Internal Error',
+        ];
+        return response()->json($resp,
+            method_exists($exception, 'getStatusCode') ? $exception->getStatusCode() : 500);
 
     }
 }

@@ -6,13 +6,14 @@ use App\Models\CommentModel;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentsController extends Controller
 {
 
     private function validate_fk(array $inputs)
     {
-        $user_exist = User::find($inputs['user_id']);
+        $user_exist = User::find(Auth::id());
 
         if (isset($inputs['id_comment_parent'])) {
 
@@ -38,8 +39,10 @@ class CommentsController extends Controller
                 $model->id_comment_parent = $values['id_comment_parent'];
             }
             $model->save();
+      	    $model->user;
+            $model->created = true;
 
-            return true;
+            return $model;
         } catch (\Throwable$th) {
             throw new Exception($th->getMessage(), 500);
         }
@@ -54,25 +57,26 @@ class CommentsController extends Controller
             $request->validate([
                 'comment' => 'required|max:255',
                 'id_film' => 'required|max:255',
-                'user_id' => 'required|numeric',
                 'id_comment_parent' => 'numeric',
             ]);
 
             $data = [
                 'comment' => $inputs['comment'],
                 'id_film' => $inputs['id_film'],
-                'user_id' => intval($inputs['user_id']),
+                'user_id' => Auth::id(),
                 'id_comment_parent' => isset($inputs['id_comment_parent']) ? $inputs['id_comment_parent'] : null,
             ];
 
             $this->validate_fk($inputs);
             $created = $this->create($data);
 
-            if ($created) {
+            if ($created->created) {
+
+                $data['id'] = $created->id;
                 return response()->json([
                     'error' => false,
                     'message' => 'Comment created successfully',
-                    'data' => $data,
+                    'data' => $created,
                 ], 201);
             }
         } catch (\Throwable$th) {
@@ -123,20 +127,23 @@ class CommentsController extends Controller
             $new_comment = $inputs['comment'];
 
             $comment = CommentModel::find($id_comment);
+            $comment->user;
             if (empty($comment)) {
                 throw new Exception('comment no exists', 400);
             }
 
-            $comment->comment = $new_comment;
-            $comment->save();
+            if ($comment->user_id == Auth::id()) {
+                $comment->comment = $new_comment;
+                $comment->save();
 
-            $comment->user;
-
-            return response()->json([
-                'error' => false,
-                'message' => 'OK',
-                'data' => $comment,
-            ], 200);
+                return response()->json([
+                    'error' => false,
+                    'message' => 'OK',
+                    'data' => $comment,
+                ], 200);
+            } else {
+                throw new Exception('comment no exists', 401);
+            }
 
         } catch (\Throwable$th) {
             throw $th;
@@ -152,12 +159,19 @@ class CommentsController extends Controller
                 throw new Exception('comment no exists', 400);
             }
 
-            $comment->delete();
+            if ($comment->user_id == Auth::id()) {
 
-            return response()->json([
-                'error' => false,
-                'message' => 'deleted comment',
-            ], 200);
+                $comment->delete();
+
+                return response()->json([
+                    'error' => false,
+                    'message' => 'deleted comment',
+                ], 200);
+
+            } else {
+                throw new Exception('comment no exists', 401);
+            }
+
         } catch (\Throwable$th) {
             throw $th;
         }

@@ -2,33 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\ScopeTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
 
-    private $name = '';
-    private $email = '';
-    private $pwss = '';
-
-    protected function set_data_value(String $name = "", String $email = "", String $pwss)
+    public function generate_public_token(Request $request)
     {
-        $this->name = $name;
-        $this->email = $email;
-        $this->pwss = Hash::make($pwss);
-    }
+        $public_scope = ScopeTrait::publicScope();
+        $token = $request->user()->createToken('public', $public_scope)->plainTextToken;
+        $data = [
+            'token' => $token,
+            'scope' => $public_scope,
+            'user' => [
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+            ],
+        ];
 
-    protected function create()
-    {
-
+        return $data;
     }
     public function index(Request $request)
     {
-        $request->validate([
-            'name' => 'bail|required|unique:posts|max:255',
-            'email' => 'required',
-            'pwss' => 'required',
-        ]);
+        try {
+
+            $data = $this->generate_public_token($request);
+            return response()->json([
+                'error' => false,
+                'message' => 'OK',
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable$th) {
+            throw $th;
+        }
     }
 }

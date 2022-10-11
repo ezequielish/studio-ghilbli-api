@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
-
 class AuthenticateOnceWithBasicAuth
 {
     /**
@@ -15,8 +13,7 @@ class AuthenticateOnceWithBasicAuth
      */
     public function handle($request, Closure $next, $guard = null, $field = null)
     {
-        $this->auth->guard($guard)->basic($field ?: 'email');
-        var_dump();
+        // $this->auth->guard($guard)->basic($field ?: 'email');
         return $next($request);
         // return Auth::onceBasic() ?: $next($request);
     }

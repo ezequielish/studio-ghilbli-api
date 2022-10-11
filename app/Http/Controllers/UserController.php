@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -19,14 +20,19 @@ class UserController extends Controller
             throw new Exception('user exists', 400);
         }
     }
-    protected function create(array $values)
+    protected function createOrUpdate(array $values, $update = false)
     {
         try {
-            $model = new User();
-            $model->name = $values['name'];
-            $model->email = $values['email'];
-            $model->password = Hash::make($values['pwss']);
-            $model->save();
+            if ($update) {
+                $user_model = User::find(Auth::id());
+            } else {
+                $user_model = new User();
+            }
+
+            $user_model->name = isset($values['name']) ? $values['name'] : $user_model->name;
+            $user_model->email = isset($values['email']) ? $values['email'] : $user_model->email;
+            $user_model->password = isset($values['pwss']) ? Hash::make($values['pwss']) : $user_model->password;
+            $user_model->save();
 
             return true;
         } catch (\Throwable$th) {
@@ -37,20 +43,14 @@ class UserController extends Controller
     {
         try {
             $inputs = $request->all();
-            $request->validate([
+            $validate = $request->validate([
                 'name' => 'required|max:255',
                 'email' => 'required|email',
                 'pwss' => 'required|min:6',
             ]);
 
-            $values = [
-                'name' => $inputs['name'],
-                'email' => $inputs['email'],
-                'pwss' => $inputs['pwss'],
-            ];
-
-            $this->validate_fk($inputs);
-            $created = $this->create($values);
+            $this->validate_fk($validate);
+            $created = $this->createOrUpdate($validate);
 
             if ($created) {
                 return response()->json([
@@ -62,5 +62,26 @@ class UserController extends Controller
         } catch (\Throwable$th) {
             throw $th;
         }
+    }
+
+    public function update(Request $request)
+    {
+        $inputs = $request->all();
+
+        $validate = $request->validate([
+            'name' => 'max:255',
+            'email' => 'email',
+            'pwss' => 'min:6',
+        ]);
+
+        $updated = $this->createOrUpdate($validate, true);
+
+        if ($updated) {
+            return response()->json([
+                'error' => false,
+                'message' => 'User updated successfully',
+            ], 200);
+        }
+
     }
 }

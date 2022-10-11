@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,13 +21,17 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth.basic.once');
 
 // Route::get('login', [UserController::class, 'show'])->middleware('auth');
-// Route::post('login', 'LoginController@index')->middleware('auth.basic');
-Route::post('user', 'UserController@index');
 
-Route::post('comment', 'CommentsController@add');
-Route::get('comment/{id_film}', 'CommentsController@get');
-Route::put('comment/{id_comment}', 'CommentsController@update');
-Route::delete('comment/{id_comment}', 'CommentsController@comment_delete');
+Route::post('login', 'LoginController@index')->middleware('auth.basic');
+
+Route::post('user', 'UserController@index');
+Route::put('user', 'UserController@update')->middleware(['auth:sanctum']);
+
+//COMMENTS
+Route::post('comment', 'CommentsController@add')->middleware(['auth:sanctum', 'ability:comment_create']);
+Route::get('comment/{id_film}', 'CommentsController@get');//->middleware(['auth:sanctum', 'ability:comment_view'])
+Route::put('comment/{id_comment}', 'CommentsController@update')->middleware(['auth:sanctum', 'ability:comment_update']);
+Route::delete('comment/{id_comment}', 'CommentsController@comment_delete')->middleware(['auth:sanctum', 'ability:comment_delete']);
 
 // Route::middleware(['auth.basic.once'])->group(function () {
 //     // Route::get('/', function () {
