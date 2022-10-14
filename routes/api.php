@@ -16,11 +16,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-// Route::get('/login', function () {
-//     // Only authenticated users may access this route...
-// })->middleware('auth.basic.once');
 
-// Route::get('login', [UserController::class, 'show'])->middleware('auth');
 
 Route::post('login', 'LoginController@index')->middleware('auth.basic');
 
@@ -32,10 +28,3 @@ Route::post('comment', 'CommentsController@add')->middleware(['auth:sanctum', 'a
 Route::get('comment/{id_film}', 'CommentsController@get');//->middleware(['auth:sanctum', 'ability:comment_view'])
 Route::put('comment/{id_comment}', 'CommentsController@update')->middleware(['auth:sanctum', 'ability:comment_update']);
 Route::delete('comment/{id_comment}', 'CommentsController@comment_delete')->middleware(['auth:sanctum', 'ability:comment_delete']);
-
-// Route::middleware(['auth.basic.once'])->group(function () {
-//     // Route::get('/', function () {
-//     //     // Uses first & second middleware...
-//     // });
-//     Route::post('/login', );
-// });
