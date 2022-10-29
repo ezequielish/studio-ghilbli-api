@@ -169,7 +169,7 @@ class CommentsController extends Controller
                 ], 200);
 
             } else {
-                throw new Exception('comment no exists', 401);
+                throw new Exception('comment no exists', 400);
             }
 
         } catch (\Throwable$th) {

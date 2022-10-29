@@ -84,4 +84,28 @@ class UserController extends Controller
         }
 
     }
+
+    public function user_delete(Request $request)
+    {
+
+        try {
+
+            $user_selected = User::find(Auth::id());
+
+            if (empty($user_selected)) {
+                throw new Exception('user no exists', 400);
+            }
+
+            $user_selected->delete();
+
+            return response()->json([
+                'error' => false,
+                'message' => 'deleted user',
+            ], 200);
+
+        } catch (\Throwable$th) {
+            throw $th;
+        }
+
+    }
 }

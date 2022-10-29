@@ -22,6 +22,8 @@ Route::post('login', 'LoginController@index')->middleware('auth.basic');
 
 Route::post('user', 'UserController@index');
 Route::put('user', 'UserController@update')->middleware(['auth:sanctum']);
+Route::delete('user', 'UserController@user_delete')->middleware(['auth:sanctum']);
+
 
 //COMMENTS
 Route::post('comment', 'CommentsController@add')->middleware(['auth:sanctum', 'ability:comment_create']);
